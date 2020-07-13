@@ -5,7 +5,7 @@ on:
     branches:
       - master
   schedule:
-    - cron: '* /120 * * * *'
+    - cron: '* /1 * * * *'
 
 jobs:
   ssr_sign:
