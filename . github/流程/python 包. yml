@@ -5,7 +5,7 @@ on:
     branches:
       - master
   schedule:
-    - cron: '0 55 13 */1 * * *'
+    - cron: '01 14,22 * * *'
 
 jobs:
   tieba_sign:
