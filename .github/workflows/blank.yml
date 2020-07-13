@@ -5,7 +5,7 @@ on:
     branches:
       - master
   schedule:
-    - cron: '51 17,22 * * *'
+    - cron: '08 18,22 * * *'
 
 jobs:
   ssr_sign:
