@@ -1,0 +1,21 @@
+name: 'ssr_Sign'
+
+on:
+  push:
+    branches:
+      - master
+  schedule:
+    - cron: '47 17,22 * * *'
+
+jobs:
+  tieba_sign:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout codes'
+        uses: actions/checkout@v2
+      - name: 'Set python'
+        uses: actions/setup-python@v1
+        with:
+          python-version: '3.6'
+      - name: 'Start Sign'
+        run: python ssr_sign.py
