@@ -87,7 +87,7 @@ def usermessage():
                 v2ray = json.dumps(v2ray)
                 print(v2ray)
                 data = '签到成功：' + checkin + '\n' + '剩余流量：' + userstr + '\n\n' + 'v2ray订阅链接链接为：' + v2ray
-                with open('email.txt', 'w')as f:
+                with open('README.md', 'w')as f:
                     f.write(data)
                 print(data)
                 sendEmail(data)
