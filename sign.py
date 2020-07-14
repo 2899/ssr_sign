@@ -1,6 +1,6 @@
 # 无限白嫖脚本
 # 使用说明：将下面的部分数据修改为你的，然后挂在腾讯云函数即可
-# 本程序基于python3.6开发
+# 本程序基于python3.6开发,仅做技术交流
 # 更新时间：2020.07.13
 # 作者；ck
 import requests
@@ -9,33 +9,37 @@ import time
 import json
 import imaplib
 import smtplib
+
+######以下为需要修改的信息##########
+####——————请认真阅读——————————####
+#主域名,一般情况下不用修改，除非此次站倒闭，理论上兼容所有sspanel系统搭建的机场
+url='https://baoziss.xyz'
+#需要准备2个邮箱，一个发送，一个接受邮件
+#1：修改为你的发件邮箱地址,请使用QQ邮箱
+email='fffd@qq.com'
+#2：发件邮箱的授权码(需开启POP3/IMAP/SMTP)等服务
+password_key='tvogcfh'
+#收件人邮箱,支持发送给多人
+#示例：take_email= ['aaa@qq.com'，'bbbb@qq.com','ccc@qq.com']
+take_email= ['12082@qq.com']
+#sever酱获取地址，https://sc.ftqq.com，不会可不填写
+sever='SCU963315ead8cf7a620c'
+#修改完后挂在腾讯云函数即可，注意，超时时间一定要设置为60s。
+
 ######通用信息，全局调用######
-#主域名
-url='https://baoziss.xyz/'
 #子域名
-loginurl =url +'auth/login'
-user = url +'user#'
-checkinUrl = url+'user/checkin'
-deleurl = url+'user/kill'
-sendurl =url+'auth/send'
-regurl = url+'auth/register'
+loginurl =url +'/auth/login'
+user = url +'/user#'
+checkinUrl = url+'/user/checkin'
+deleurl = url+'/user/kill'
+sendurl =url+'/auth/send'
+regurl = url+'/auth/register'
+nodeurl = url+'/user/node'
 #使用requests.Session进行cookie保留登陆
 ssr = requests.Session()
 #默认注册时所用的密码
 password='Aa112211'
 
-######以下为需要修改的信息##########
-
-#需要准备2个邮箱，一个发送，一个接受邮件
-#1：修改为你的发件邮箱地址
-email='1512403685@qq.com'
-#2：发件邮箱的授权码(需开启POP3/IMAP/SMTP)等服务
-password_key='tvxergwufcfogcfh'
-#收件人邮箱
-take_email= '1209739382@qq.com'
-#sever酱获取地址，https://sc.ftqq.com，不会可不填写
-sever='SCU96331Tbec475a0fd8594f8bf14ba8862539e915ead8cf7a620c'
-#修改完后挂在腾讯云函数即可。
 
 
 #登陆进行判断，如果账号不存在则进行注册，存在则效验流量和会员天数。
@@ -62,35 +66,62 @@ def usermessage():
         Url = checkinUrl
         urlhtml = ssr.post(Url).text
         checkin = json.loads(urlhtml)['msg']
-        print(type(checkin))
         print(checkin)
         # 获取网页详情
         userhtml = ssr.get(user).text
         # 查询剩余流量
-        pattern = re.compile('(?<= <span class="counter">).*(?=</span> GB)')
+        pattern = re.compile('(?<=<span class="counter">).*(?=B)')
         userstr = pattern.findall(userhtml)[0]
+        userstr1 =userstr.replace('</span>',' ')
+        pattern = re.compile('(?<=).*(?=</span>)')
+        userstr = pattern.findall(userstr)[0]
         userres = float(userstr)
         if userres <= 0.00:
             print('没流量了')
             deleacc()
+
         else:
             # 查询剩余天数
             pattern = re.compile('(?<= <span class="counter">).*(?=</span> 天)')
-            time = int(pattern.findall(userhtml)[0])
-            if time == 0:
-                print('没天数了，删除账号重新注册')
-                deleacc()
-            else:
-                # 查询订阅节点
+            time = pattern.findall(userhtml)
+            if time == []:
+                print('可能为永久版')
+                # 查询订阅链接
                 pattern = re.compile('(?<= data-clipboard-text=").*(?="><i class="malio-v2rayng"></i> 复制 V2Ray 订阅链接)')
-                v2ray = pattern.findall(userhtml)[0]
-                v2ray = json.dumps(v2ray)
+                v2rayurl = pattern.findall(userhtml)
+                print(v2rayurl)
+                v2rayurl = json.dumps(v2rayurl)
+                print(v2rayurl)
+                # 查询订阅节点详情
+                v2ray = ssr.get(nodeurl).text
+                pattern = re.compile('(?<=VMess链接: <code>).*(?=</code></div>)')
+                v2raytext = pattern.findall(v2ray)
+                v2ray = json.dumps(v2raytext)
                 print(v2ray)
-                data = '签到成功：' + checkin + '\n' + '剩余流量：' + userstr + '\n\n' + 'v2ray订阅链接链接为：' + v2ray
-                with open('README.md', 'w')as f:
-                    f.write(data)
+                data = '签到成功：' + checkin + '\n' + '剩余流量：' + userstr1 + 'B' + '\n\n' + 'v2ray链接为：' + v2ray + '\n\n' + 'v2ray订阅链接链接为：' + v2rayurl
                 print(data)
                 sendEmail(data)
+            else:
+                time = int(pattern.findall(userhtml)[0])
+                if time == 0:
+                    print('没天数了，删除账号重新注册')
+                    deleacc()
+                else:
+                    # 查询订阅链接
+                    pattern = re.compile(
+                        '(?<= data-clipboard-text=").*(?="><i class="malio-v2rayng"></i> 复制 V2Ray 订阅链接)')
+                    v2rayurl = pattern.findall(userhtml)[0]
+                    v2rayurl = json.dumps(v2rayurl)
+                    print(v2rayurl)
+                    # 查询订阅节点详情
+                    v2ray = ssr.get(nodeurl).text
+                    pattern = re.compile('(?<=VMess链接: <code>).*(?=</code></div>)')
+                    v2raytext = pattern.findall(v2ray)
+                    v2ray = json.dumps(v2raytext)
+                    print(v2ray)
+                    data = '签到成功：' + checkin + '\n' + '剩余流量：' + userstr1 + 'B' + '\n\n' + 'v2ray链接为：' + v2ray + '\n\n' + 'v2ray订阅链接链接为：' + v2rayurl
+                    print(data)
+                    sendEmail(data)
     except Exception as e:
         text='查询页面信息时发生了错误，请查看运行日志'
         print(text)
@@ -111,7 +142,7 @@ def sendEmail(data):
     from_addr = email
     password = password_key
     # 收信方邮箱
-    to_addr = take_email
+    to_addr =  ','.join(take_email)
     # 发信服务器
     smtp_server = 'smtp.qq.com'
     # 邮箱正文内容，第一个参数为内容，第二个参数为格式(plain 为纯文本)，第三个参数为编码
@@ -126,7 +157,7 @@ def sendEmail(data):
     # 登录发信邮箱
     server.login(from_addr, password)
     # 发送邮件
-    server.sendmail(from_addr, to_addr, msg.as_string())
+    server.sendmail(from_addr, to_addr.split(','), msg.as_string())
     # 关闭服务器
     server.quit()
 
