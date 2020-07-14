@@ -1,5 +1,6 @@
 # ssr_sign
-节点白嫖版，自动签到。
+节点白嫖版，自动注册，自动签到，自动检测剩余流量，自动注销账号。
+终极版本，几乎适用于所有机场
 
 1：在腾讯云，找到云函数，点击新建
 ![image](https://github.com/ckjiexi/ssr_sign/blob/master/images/Pasted%20Graphic_%E5%89%AF%E6%9C%AC.png)
